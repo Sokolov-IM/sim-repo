@@ -78,6 +78,38 @@ def classify(email):
     else:
         return False
 
+def validation(validation_data):
+    train()
+    prediction = {}
+
+    for text, label in validation_data:
+        prediction[text] = classify(text)
+
+    TP, TN, FP, FN = 0, 0, 0, 0
+
+    # в prediction метки принимают значения True и False
+    for i, text in enumerate(prediction):
+        if prediction[text]:
+            if (validation_data[i][1] == SPAM):
+                TP += 1
+            else:
+                FP += 1
+        else:
+            if(validation_data[i][1] == NOT_SPAM):
+                TN += 1
+            else:
+                FN += 1
+
+    accuracy = round((TP+TN)/(TP+TN+FP+FN), 2)
+    recall = round(TP/(TP+FN), 2)
+    precision = round(TP/(TP+FP), 2)
+    F_measure = round(2*recall*precision/(recall+precision), 2)
+
+    print('accuracy:', accuracy)
+    print('recall:', recall)
+    print('precision:', precision)
+    print('F-measure:', F_measure)
+
 #train()
 
 #result = classify('Купите три по цене двух')
