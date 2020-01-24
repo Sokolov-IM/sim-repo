@@ -24,11 +24,17 @@ train_data = [
 
 validation_data = [
     ['Купите три по цене двух', SPAM],
-    ['Поздравляю, вы выиграли в лотерею', SPAM],
+    ['Поздравляю, вы выиграли телевизор', SPAM],
     ['Здраствуйте, у меня для вас отличная новость', SPAM],
     ['Исправлено, прошу проверить', NOT_SPAM],
     ['Добрый день. Подскажите по ошибке.', NOT_SPAM],
-    ['Купи вечером молоко коту', NOT_SPAM]
+    ['Купи вечером молоко коту', NOT_SPAM],
+    ['Поздравляю, вы принимали участие в розыгрыше', SPAM],
+    ['Новая книга ждет вас', SPAM],
+    ['Здраствуйте, у меня для вас отличная новость, вы выиграли 1000000 рублей', SPAM],
+    ['Перенос типа пакета отдельно от проекта.', NOT_SPAM],
+    ['В какой последовательности были запущены команды?', NOT_SPAM],
+    ['Привет. Предлагаю опробовать команду', NOT_SPAM]
 ]
 
 def train():
@@ -109,11 +115,13 @@ def validation(validation_data):
             else:
                 FN += 1
 
+    confusion_matrix = np.array([[TN, FN],[FP, TP]])
     accuracy = round((TP+TN)/(TP+TN+FP+FN), 2)
     recall = round(TP/(TP+FN), 2)
     precision = round(TP/(TP+FP), 2)
     F_measure = round(2*recall*precision/(recall+precision), 2)
 
+    print(confusion_matrix)
     print('accuracy:', accuracy)
     print('recall:', recall)
     print('precision:', precision)
@@ -123,5 +131,5 @@ def validation(validation_data):
 
 #result = classify('Купите три по цене двух')
 #print ('result:', result)
-#print ('pA:', pA)
-#print ('pNotA:', pNotA)
+
+validation(validation_data)
