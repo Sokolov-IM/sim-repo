@@ -121,7 +121,7 @@ def validation(validation_data):
     precision = round(TP/(TP+FP), 2)
     F_measure = round(2*recall*precision/(recall+precision), 2)
 
-    print(confusion_matrix)
+    print('confusion_matrix: \n', confusion_matrix)
     print('accuracy:', accuracy)
     print('recall:', recall)
     print('precision:', precision)
