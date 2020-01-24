@@ -95,7 +95,7 @@ def classify(email):
 
 def validation(validation_data):
     train()
-    prediction = {}
+    prediction = []
 
     for text, label in validation_data:
         prediction[text] = classify(text)
@@ -104,7 +104,7 @@ def validation(validation_data):
 
     # в prediction метки принимают значения True и False
     for i, text in enumerate(prediction):
-        if prediction[text]:
+        if text[1]:
             if (validation_data[i][1] == SPAM):
                 TP += 1
             else:
