@@ -10,7 +10,7 @@ Z = 0.1 # коэффициент размытия для сглаживания 
 trainPositive, trainNegative = {}, {}
 positive_total, negative_total, total = 0, 0, 0
 
-data = pd.read_csv('D:/Ivan/pt/spam_or_not_spam.csv')
+data = pd.read_csv('../resources/spam_or_not_spam.csv')
 data.dropna(inplace=True)
 
 # оставим только слова в тексте и ограничим длинну слов 3-15 символов
