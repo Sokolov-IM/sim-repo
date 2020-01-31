@@ -10,29 +10,40 @@ Z = 0.1 # коэффициент размытия для сглаживания 
 trainPositive, trainNegative = {}, {}
 positive_total, negative_total, total = 0, 0, 0
 
-data = pd.read_csv('../resources/spam_or_not_spam.csv')
-data.dropna(inplace=True)
+train_data = pd.DataFrame()
+validation_data = pd.DataFrame()
 
-# оставим только слова в тексте и ограничим длинну слов 3-15 символов
-data['email'] = data['email'].apply(lambda text: re.sub(r'\b\w{1, 3}\b', '', text))
-data['email'] = data['email'].apply(lambda text: re.sub(r'\b\w{15, }\b', '', text))
+spamTextCount = 0
+all = 0
 
-spamTextCount = data[data['label'] == SPAM]['label'].sum()
+def get_data(data_path):
+    global train_data, validation_data, spamTextCount, all
 
-spam = data[data['label'] == 1]
-ham = data[data['label'] == 0]
+    data = pd.read_csv(data_path)
+    data.dropna(inplace=True)
 
-Sep = 0.9
-Sep_spam = round(len(spam)*Sep)
-Sep_ham = round(len(ham)*Sep)
+    all = len(data)
 
-train_data = spam[:][:Sep_spam].append(ham[:][:Sep_ham], ignore_index=True)
-validation_data = spam[:][Sep_spam:].append(ham[:][Sep_ham:], ignore_index=True)
+    # оставим только слова в тексте и ограничим длинну слов 3-15 символов
+    data['email'] = data['email'].apply(lambda text: re.sub(r'\b\w{1, 3}\b', '', text))
+    data['email'] = data['email'].apply(lambda text: re.sub(r'\b\w{15, }\b', '', text))
+
+    spam = data[data['label'] == 1]
+    ham = data[data['label'] == 0]
+
+    spamTextCount = len(spam)
+
+    Sep = 0.9
+    Sep_spam = round(len(spam) * Sep)
+    Sep_ham = round(len(ham) * Sep)
+
+    train_data = spam[:][:Sep_spam].append(ham[:][:Sep_ham], ignore_index=True)
+    validation_data = spam[:][Sep_spam:].append(ham[:][Sep_ham:], ignore_index=True)
 
 def train():
     # Считаем pA и pNotA
     # Считаем частоты каждого слова с помощью calculate_word_frequencies()
-    global pA, pNotA, data, total
+    global pA, pNotA, total
 
     for i, row in train_data.iterrows():
         body = row['email']
@@ -41,7 +52,7 @@ def train():
 
     total = len(trainPositive) + len(trainNegative)
 
-    pA = spamTextCount/len(data)
+    pA = spamTextCount/all
     pNotA = 1 - pA
     # будем использовать логарифм от вероятностей, так как будут очень малые значения и округлим до 2-х знаков
     pA = round(np.log(pA), 2)
@@ -123,6 +134,8 @@ def validation(validation_data):
     print('precision:', precision)
     print('F-measure:', F_measure)
 
+#path = 'spam_or_not_spam.csv'
+#get_data(path)
 #train()
 
 #letter1 = 'Hi, My name is Warren E. Buffett an American business magnate, investor and philanthropist. am the most successful investor in the world. I believe strongly in‘giving while living’ I had one idea that never changed in my mind? that you should use your wealth to help people and i have decided to give {$1,500,000.00} One Million Five Hundred Thousand United Dollars, to randomly selected individuals worldwide. On receipt of this email, you should count yourself as the lucky individual. Your email address was chosen online while searching at random. Kindly get back to me at your earliest convenience before i travel to japan for my treatment , so I know your email address is valid. Thank you for accepting our offer, we are indeed grateful You Can Google my name for more information: God bless you. Best Regard Mr.Warren E. Buffett Billionaire investor !'
