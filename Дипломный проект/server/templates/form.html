@@ -5,11 +5,6 @@
         <title>House prediction</title>
         <style>
             form {width: 420px;}
-            div {margin-bottom: 20px;}
-            label {display: inline-block;
-                    width: 240px;
-                    text-align: right;
-                    padding-right: 10px;}
             button, input {float: right;}
         </style>
     </head>
@@ -18,7 +13,7 @@
             <table border="0" cellspacing="20" cellpadding="20">
                 <tbody>
                     <tr>
-						<td class="bdcnt" valign="top">
+						<td valign="top">
 						<h1>Расчет стоимости дома</h1>
 						</td>
                     </tr>
@@ -49,7 +44,7 @@
 						</tr>
                         <tr>
                             <td valign="top">Штат</td>
-							<td valign="top"><input type="text" pattern="[A-Za-z]{2}" name="state" id="state" value=TX></td>
+							<td valign="top"><input type="text" pattern="[A-Za-z]{2}" title="2 латинские буквы" name="state" id="state" value=TX></td>
 						</tr>
                         <tr>
                             <td valign="top">Истории</td>
@@ -57,10 +52,10 @@
 						</tr>
                         <tr>
                             <td valign="top">Бассейн</td>
-							<td valign="top"><input type="number" required name="private_pool" id="private_pool" value={{private_pool}}></td>
+							<td valign="top"><input type="number" required name="private_pool" min=0 max=1 id="private_pool" value={{private_pool}}></td>
 						</tr>
                         <tr>
-                            <td valign="top">Площадь участка</td>
+                            <td valign="top">Площадь участка (кв. фут)</td>
 							<td valign="top"><input type="number" required name="lotsize" id="lotsize" value={{lotsize}}></td>
 						</tr>
                         <tr>
@@ -69,11 +64,11 @@
 						</tr>
                         <tr>
                             <td valign="top">Год постройки</td>
-							<td valign="top"><input pattern="[0-9]{4}" required name="year_built" id="year_built" value={{year_built}}></td>
+							<td valign="top"><input pattern="[0-9]{4}" required title="4 цифры" name="year_built" id="year_built" value={{year_built}}></td>
 						</tr>
                         <tr>
                             <td valign="top">Год ремонта</td>
-							<td valign="top"><input pattern="[0-9]{4}" required name="remodeled_year" id="remodeled_year" value={{remodeled_year}}></td>
+							<td valign="top"><input pattern="[0-9]{4}" required title="4 цифры" name="remodeled_year" id="remodeled_year" value={{remodeled_year}}></td>
 						</tr>
                         <tr>
                             <td></td>
@@ -89,8 +84,8 @@
                         <th width="50%" class="dthd" valign="top" scope="col"></th>
                     </tr>
                     <tr>
-                        <td valign="top">Стоимость</td>
-                        <td valign="top"><input name="result" id="result" value={{result}}></td>
+                        <td valign="top">Стоимость $</td>
+                        <td valign="top"><input name="result" readonly id="result" value={{result}}></td>
                     </tr>
                 </tbody>
             </table>
