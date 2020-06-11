@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+        <title>House prediction</title>
+        <style>
+            form {width: 420px;}
+            div {margin-bottom: 20px;}
+            label {display: inline-block;
+                    width: 240px;
+                    text-align: right;
+                    padding-right: 10px;}
+            button, input {float: right;}
+        </style>
+    </head>
+    <body>
+        <center>
+            <table border="0" cellspacing="20" cellpadding="20">
+                <tbody>
+                    <tr>
+						<td class="bdcnt" valign="top">
+						<h1>Расчет стоимости дома</h1>
+						</td>
+                    </tr>
+                </tbody>
+            </table>
+            <form action="{{ url_for('predict') }}" method="post">
+                <table width="100%" border="0" cellspacing="0" cellpadding="4">
+                    <tbody>
+						<tr>
+							<th width="50%" class="dthd" valign="top" scope="col"></th>
+							<th width="50%" class="dthd" valign="top" scope="col"></th>
+						</tr>
+                        <tr>
+                            <td valign="top">Город</td>
+							<td valign="top"><input type="text" pattern="^[A-Za-z\s]+$" name="city" id="city" value=Houston></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Площадь (кв. фут)</td>
+							<td valign="top"><input type="number" required name="sqft" id="sqft" value={{sqft}}></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Почтовый индекс</td>
+							<td valign="top"><input type="number" pattern="[0-9]{,6}" required name="zipcode" id="zipcode" value={{zipcode}}></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Кол-во спален</td>
+							<td valign="top"><input type="number" required name="beds" id="beds" value={{beds}}></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Штат</td>
+							<td valign="top"><input type="text" pattern="[A-Za-z]{2}" name="state" id="state" value=TX></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Истории</td>
+							<td valign="top"><input type="number" required name="stories" id="stories" value={{stories}}></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Бассейн</td>
+							<td valign="top"><input type="number" required name="private_pool" id="private_pool" value={{private_pool}}></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Площадь участка</td>
+							<td valign="top"><input type="number" required name="lotsize" id="lotsize" value={{lotsize}}></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Кол-во ванных комнат</td>
+							<td valign="top"><input type="number" required name="baths_count" id="baths_count" value={{baths_count}}></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Год постройки</td>
+							<td valign="top"><input type="number" pattern="[0-9]{4}" required name="year_built" id="year_built" value={{year_built}}></td>
+						</tr>
+                        <tr>
+                            <td valign="top">Год ремонта</td>
+							<td valign="top"><input type="number" pattern="[0-9]{4}" required name="remodeled_year" id="remodeled_year" value={{remodeled_year}}></td>
+						</tr>
+                        <tr>
+                            <td></td>
+							<td valign="top"><button>Расчитать</button></td>
+						</tr>
+                    </tbody>
+                </table>
+            </form>
+            <table width=420px border="0" cellspacing="0" cellpadding="4">
+                <tbody>
+                    <tr>
+                        <th width="50%" class="dthd" valign="top" scope="col"></th>
+                        <th width="50%" class="dthd" valign="top" scope="col"></th>
+                    </tr>
+                    <tr>
+                        <td valign="top">Стоимость</td>
+                        <td valign="top"><input name="result" id="result" value={{result}}></td>
+                    </tr>
+                </tbody>
+            </table>
+        </center>
+    </body>
+    </html>
