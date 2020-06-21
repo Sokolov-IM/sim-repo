@@ -1,25 +1,26 @@
 import pandas as pd
-import os
+import numpy as np
 import pickle
 import math
 
-models = []
+model = ''
 zipcode = pd.DataFrame()
 US_cities = pd.DataFrame()
 zip_sex_pop = pd.DataFrame()
+price_sqft_median = pd.DataFrame()
 
 def load_models(path):
-    global models, zipcode, US_cities, zip_sex_pop
-    files = os.listdir(path)
-    models = []
-    for file in files:
-        with open(path +'\\'+ file, 'rb') as pkl_file:
-            model = pickle.load(pkl_file)
-            models.append(model)
+    global model, zipcode, US_cities, zip_sex_pop, price_sqft_median
+
+    regr_file = 'voting.pkl'
+
+    with open(path +'\\'+ regr_file, 'rb') as pkl_file:
+        model = pickle.load(pkl_file)
 
     zipcode = pd.read_csv('./application/US.txt', sep='\t')
     US_cities = pd.read_csv('./application/US_cities.csv')
     zip_sex_pop = pd.read_csv('./application/zip_sex_pop.csv')
+    price_sqft_median = pd.read_csv('./application/houston_zip_price_sqft_median.csv')
 
 # добавляет координаты почтовых отделений
 def add_zip_coordinates(df_input, zipcode):
@@ -94,20 +95,27 @@ def distCentePost(row):
     row['postAzimuth'] = az
     return row
 
-def get_prediction(features):
+def add_features(features):
     features = add_zip_coordinates(features, zipcode)
     features = add_city_coordinates(features, US_cities)
     features = features.merge(zip_sex_pop, how='inner', left_on='zipcode', right_on='zipCode')
     features.drop('zipCode', axis=1, inplace=True)
     features = features.apply(lambda row: distCentePost(row), axis=1)
+    features = features.merge(price_sqft_median, how='inner', left_on='zipcode', right_on='zipcode')
     features.drop(['city', 'state', 'zipcode', 'zip_latitude', 'zip_longitude', 'city_latitude',
        'city_longitude'], axis=1, inplace=True)
+    return features
 
-    sqft = features['sqft'][0]
-
-    predictions = pd.DataFrame()
-    for i, model in enumerate(models):
-        predictions['pred_'+str(i)] = model.predict(features).round(0)
-    predictions['blend'] = round((predictions.sum(axis=1))/len(predictions.columns))
-    price = predictions['blend'][0]*sqft
-    return price
+def get_prediction(features):
+    try:
+        features = add_features(features)
+        sqft = features['sqft'][0]
+        predict = model.predict(features)[0].round(0)
+        possible = np.abs((predict - features['price_sqft_median'][0]) / predict) * 100
+        if possible < 15:
+            price = predict * sqft
+            return price
+        else:
+            return 'нет_оценки'
+    except Exception:
+        return 'нет_оценки'
