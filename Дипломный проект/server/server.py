@@ -27,6 +27,7 @@ def predict():
         result = get_prediction(features)
 
         return render_template('form.html',
+                           street=data['street'],
                            sqft=data['sqft'],
                            zipcode=data['zipcode'],
                            beds=data['beds'],
@@ -39,6 +40,7 @@ def predict():
                            )
     except Exception:
         return render_template('form.html',
+                               street=data['street'],
                                sqft=data['sqft'],
                                zipcode=data['zipcode'],
                                beds=data['beds'],
