@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 import pickle
 import math
+from geopy.geocoders import Nominatim
 
 model = ''
 zipcode = pd.DataFrame()
 US_cities = pd.DataFrame()
 zip_sex_pop = pd.DataFrame()
-price_sqft_median = pd.DataFrame()
 
 def load_models(path):
     global model, zipcode, US_cities, zip_sex_pop, price_sqft_median
@@ -20,7 +20,6 @@ def load_models(path):
     zipcode = pd.read_csv('./application/US.txt', sep='\t')
     US_cities = pd.read_csv('./application/US_cities.csv')
     zip_sex_pop = pd.read_csv('./application/zip_sex_pop.csv')
-    price_sqft_median = pd.read_csv('./application/houston_zip_price_sqft_median.csv')
 
 # добавляет координаты почтовых отделений
 def add_zip_coordinates(df_input, zipcode):
@@ -47,6 +46,45 @@ def add_city_coordinates(df_input, US_cities):
     df_output.rename(columns={'Latitude': 'city_latitude', 'Longitude': 'city_longitude'}, inplace=True)
     df_output.drop(['City', 'Region'], axis=1, inplace=True)
     return df_output
+
+
+# получает координаты по адресу
+# используем  бесплатный сервис Nominatim
+# работает очень долго из-за ограничений бесплатного сервиса
+# иногда находит неверные координаты если не указан город
+# в другом случае не находит координат если указан город
+def get_geo_info(row, timeout=1):
+    geo_locator = Nominatim()
+    error = 'Location error'
+    location = ''
+    location2 = ''
+    try:
+        location = geo_locator.geocode(row['street'] + ' ' + row['city'], timeout=timeout)
+    except Exception:
+        row['adress_latitude'] = error
+        row['adress_longitude'] = error
+
+    if not location:
+        try:
+            location2 = geo_locator.geocode(row['street'], timeout=timeout)
+        except Exception:
+            row['adress_latitude'] = error
+            row['adress_longitude'] = error
+        if not location2:
+            row['adress_latitude'] = error
+            row['adress_longitude'] = error
+        else:
+            lat = location2.latitude
+            long = location2.longitude
+            row['adress_latitude'] = lat
+            row['adress_longitude'] = long
+    else:
+        lat = location.latitude
+        long = location.longitude
+        row['adress_latitude'] = lat
+        row['adress_longitude'] = long
+
+    return row
 
 # функция считает растояние и азимут между двумя точками
 # код взят здесь https://pastebin.com/PHeWmiEN
@@ -81,18 +119,20 @@ def dist_azimut(llat1, llong1, llat2, llong2):
     z2 = (z+180.) % 360. - 180.
     z2 = - math.radians(z2)
     anglerad2 = z2 - ((2*math.pi)*math.floor((z2/(2*math.pi)))) # в радианах
-    angledeg = round((anglerad2*180.)/math.pi, 2) # в градусах
-    #row['distance'] = dist
-    #row['azimut'] = angledeg
+    angledeg = round((anglerad2*180.)/math.pi) # в градусах
     return dist, angledeg
 
-def distCentePost(row):
-    dist, az = dist_azimut(float(row['city_latitude']),
-                           float(row['city_longitude']),
-                           float(row['zip_latitude']),
-                           float(row['zip_longitude']))
-    row['centreToPost'] = dist
-    row['postAzimuth'] = az
+def distanceToCentre(row):
+    if (row['adress_latitude']!='Location error') and (row['adress_longitude']!='Location error'):
+        dist, az = dist_azimut(float(row['city_latitude']),
+                               float(row['city_longitude']),
+                               float(row['adress_latitude']),
+                               float(row['adress_longitude']))
+        row['distanceToCentre'] = dist
+        row['azimuth'] = az
+    else:
+        row['distanceToCentre'] = -1
+        row['azimuth'] = -1
     return row
 
 def add_features(features):
@@ -100,19 +140,21 @@ def add_features(features):
     features = add_city_coordinates(features, US_cities)
     features = features.merge(zip_sex_pop, how='inner', left_on='zipcode', right_on='zipCode')
     features.drop('zipCode', axis=1, inplace=True)
-    features = features.apply(lambda row: distCentePost(row), axis=1)
-    features = features.merge(price_sqft_median, how='inner', left_on='zipcode', right_on='zipcode')
-    features.drop(['city', 'state', 'zipcode', 'zip_latitude', 'zip_longitude', 'city_latitude',
-       'city_longitude'], axis=1, inplace=True)
+    features = features.apply(lambda row: get_geo_info(row), axis=1)
+    features = features.apply(lambda row: distanceToCentre(row), axis=1)
+    features.drop(['street', 'city', 'state', 'zip_latitude', 'zip_longitude', 'city_latitude',
+       'city_longitude', 'adress_latitude', 'adress_longitude'], axis=1, inplace=True)
+    features['male/female'] = features['Male']/features['Female']*100
+    features['male/female'] = features['male/female'].round()
+    features['rooms'] = features['beds']+features['baths_count']
     return features
 
 def get_prediction(features):
     try:
         features = add_features(features)
         sqft = features['sqft'][0]
-        predict = model.predict(features)[0].round(0)
-        possible = np.abs((predict - features['price_sqft_median'][0]) / predict) * 100
-        if possible < 15:
+        if features['distanceToCentre'][0]!=-1:
+            predict = model.predict(features)[0].round(0)
             price = predict * sqft
             return price
         else:
